@@ -20,4 +20,4 @@ class IAgent:
     def __init__(self, game, seed=1):
         self._game = game
         self._rnd = random.Random(seed)
-        raise Exception
+        # raise Exception
