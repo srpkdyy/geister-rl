@@ -13,7 +13,7 @@ class TCPPlayer():
         self.agent = agent
 
     def get_hand(self, state):
-        self._game.setState(state=state)
+        self._game.setState(state=state.decode())
 
         # # 脱出可能か検討...してない
 
