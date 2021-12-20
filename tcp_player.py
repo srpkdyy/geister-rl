@@ -5,6 +5,7 @@ from geister2 import Geister2
 from random_agent import RandomAgent
 from reinforce_agent import REINFORCEAgent
 from greedy_agent import GreedyAgent
+from time import sleep
 
 
 class TCPPlayer():
@@ -33,7 +34,7 @@ class TCPPlayer():
 def tcp_connect(agent, game, port, host="localhost", games=1):
     rs = [0, 0, 0]  # rs = [win, draw, lost]
     player = TCPPlayer(agent=agent, game=game)
-    for _ in range(args.games):
+    for _ in range(games):
         result = client.run(player, port, host)
         rs[result] += 1
         sleep(0.1)
@@ -41,7 +42,6 @@ def tcp_connect(agent, game, port, host="localhost", games=1):
 
 
 if __name__ == "__main__":
-    from time import sleep
     parser = argparse.ArgumentParser(description='TCP接続するクライエント')  # 2. パーサを作る
     # # 3. parser.add_argumentで受け取る引数を追加していく
     parser.add_argument('-p', '--port', type=int, default=10000)

@@ -52,6 +52,7 @@ class Geister2(Geister):
         return legalMoves
 
     def setState(self, state):
+        self.state = state
         for i in range(16):
             self.units[i].x = int(self.state[i * 3])
             self.units[i].y = int(self.state[i * 3 + 1])
