@@ -3,56 +3,55 @@ sys.path.append(os.pardir)
 
 import numpy as np
 import random
+import itertools
 from iagent import IAgent
-from geister import Geister
 from geister2 import Geister2
 
 
 class GAgent(IAgent):
-    LEN_CHROM = 64
+    LEN_CHROM = sum(range(42*3 + 1)) # 8001
 
     def __init__(self, game, seed=42, chrom=None):
         super(GAgent, self).__init__(game, seed)
         np.random.seed(seed)
 
         if chrom is None:
-            self.chrom = np.random.rand(GAgent.LEN_CHROM)
+            self.chrom = np.random.rand(GAgent.LEN_CHROM) * 2 - 1
         else:
             assert len(chrom) == GAgent.LEN_CHROM
             self.chrom = chrom
 
 
     def init_red(self):
-        return ['A', 'B', 'C', 'D']
-        init_place = None
-        scores = np.array(self.evaluate(ip) for ip in init_place)
-        return init_place[scores.argmax()]
+        units = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+        red_places = list(itertools.combinations(units, 4))
+
+        states = []
+        g = self._game
+        for red_place in red_places:
+            g.setRed(red_place)
+            states.append(self.relate_pairwise(g.crr_state()))
+
+        scores = np.array([self.evaluate(s) for s in states])
+        return red_places[scores.argmax()]
 
     
-
-    def get_act_afterstates(self, game):
-        nxt_act, _ = self.get_hand(game)
-        return nxt_act
-
-    
-    def get_hand(self, game):
-        self._game = game
-
-        moves = self._game.legalMoves()
-        scores = np.zeros(len(moves))
-
-        for i, nxt in enumerate(moves):
-            game = self._game
-            game.move(*nxt)
-            scores[i] = self.evaluate(game.after_states())
-
-        nxt = scores.argmax()
-        return nxt, moves[nxt]
+    def get_act_afterstates(self, states):
+        rps = [self.relate_pairwise(s) for s in states]
+        scores = [self.evaluate(rp) for rp in rps]
+        nxt = np.array(scores).argmax()
+        return nxt
 
 
-    def evaluate(self, states):
-        # return board.dot(self.chrom)
-        return np.random.rand()
+    def relate_pairwise(self, state):
+        s = np.array(state)
+        x1, x2 = s.reshape(1, -1), s.reshape(-1, 1)
+        m = np.triu(x1 * x2)
+        return m.reshape(-1)[:GAgent.LEN_CHROM]
+
+
+    def evaluate(self, x):
+        return np.dot(x, self.chrom)
 
 
 
