@@ -21,6 +21,13 @@ class GAgent(IAgent):
             assert len(chrom) == GAgent.LEN_CHROM
             self.chrom = chrom
 
+        self.ROW_IDS = []
+        self.COL_IDS = []
+        for i in range(42*3):
+            self.ROW_IDS += [i]*(i+1)
+            for j in range(i+1):
+                self.COL_IDS += [j]
+
 
     def init_red(self):
         units = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
@@ -67,12 +74,17 @@ if __name__ == '__main__':
     game.printBoard()
 
     player = 0
-    while game.checkResult() == 0:
+    turn = 0
+    while game.checkResult() == 0 and turn < 150:
         states = game.after_states()
         act = agents[player].get_act_afterstates(states)
         game.on_action_number_received(act)
         game.changeSide()
         player ^= 1
+        turn += 1
     game.changeSide()
     game.printAll()
+
+    print(player ^ 1 if game.checkResult() != 0 else 'draw')
+
 
