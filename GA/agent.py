@@ -4,6 +4,7 @@ sys.path.append(os.pardir)
 import numpy as np
 import random
 import itertools
+from tqdm import tqdm
 from iagent import IAgent
 from geister2 import Geister2
 
@@ -65,26 +66,30 @@ class GAgent(IAgent):
 if __name__ == '__main__':
     game = Geister2()
 
-    agents = [GAgent(game), GAgent(game)]
+    chroms = np.load('weights/latest_100.npy', allow_pickle=True)
+    agents = [GAgent(game, chrom=chroms[0][0]), GAgent(game, chrom=chroms[1])]
     
     for agent in agents:
         game.setRed(agent.init_red())
         game.changeSide()
 
-    game.printBoard()
+    #game.printBoard()
 
-    player = 0
-    turn = 0
-    while game.checkResult() == 0 and turn < 150:
-        states = game.after_states()
-        act = agents[player].get_act_afterstates(states)
-        game.on_action_number_received(act)
-        game.changeSide()
-        player ^= 1
-        turn += 1
-    game.changeSide()
-    game.printAll()
+    res = [0]*3
+    for i in tqdm(range(100)):
+        player = 0
+        turn = 0
+        while game.checkResult() == 0 and turn < 150:
+            states = game.after_states()
+            act = agents[player].get_act_afterstates(states)
+            game.on_action_number_received(act)
+            game.changeSide()
+            player ^= 1
+            turn += 1
+        res[player^1 if game.checkResult() != 0 else 2] += 1
+        #game.changeSide()
+        #game.printAll()
 
-    print(player ^ 1 if game.checkResult() != 0 else 'draw')
+    print(res)
 
 

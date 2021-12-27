@@ -1,6 +1,7 @@
 import client
 import argparse
 import tcp_player
+import numpy as np
 from geister2 import Geister2
 from GA.agent import GAgent
 
@@ -10,7 +11,8 @@ def main(args):
     agents = {
         'GA': GAgent
     }
-    agent = agents[args.agent](game)
+    chrom = np.load('GA/weights/latest_100.npy', allow_pickle=True)
+    agent = agents[args.agent](game, chrom=chrom[1])
 
     res = tcp_player.tcp_connect(agent, game, args.port, args.host, args.n_games)
     print('WIN: {}\nDRAW: {}\nLOSE: {}'.format(*res))

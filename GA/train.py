@@ -14,11 +14,20 @@ from agent import GAgent
 from random_agent import RandomAgent
 from greedy_agent import GreedyAgent
 
-pop_size = 32
+pop_size = 64
 len_chrom = GAgent.LEN_CHROM
 
 
-def main(chroms, n_gen, n_gengap = 25, mut_pb=0.01):
+def main(chroms, n_gen, n_gengap = 58, mut_pb=0.01):
+    n_parents = pop_size - n_gengap
+    n_crossov = pop_size - n_parents
+    n_elite = 1
+    #n_roulette = n_parents - n_elite
+    n_ranking = n_parents - n_elite
+
+    most_elite = None
+    max_win = 0
+
     for gen in tqdm(range(n_gen)):
         scores = round_robin(chroms)
         print(scores)
@@ -28,15 +37,16 @@ def main(chroms, n_gen, n_gengap = 25, mut_pb=0.01):
         scores = scores[rank_idx]
 
         if gen == n_gen - 1:
-            return chroms
+            return chroms, most_elite
 
         if gen % 10 == 0:
-            test(chroms[0], 'q-learn', 100)
+            print(chroms)
+            win, *_ = test(chroms[0], 'q-learn', 100)
+            if win > max_win:
+                most_elite = chroms[0]
+                max_win = win
+            
 
-        n_parents = pop_size - n_gengap
-        n_crossov = pop_size - n_parents
-        n_elite = 2
-        n_roulette = n_parents - n_elite
 
         # elite select
         parents = np.zeros([n_parents, len_chrom])
@@ -46,22 +56,23 @@ def main(chroms, n_gen, n_gengap = 25, mut_pb=0.01):
         scores = scores[n_elite:]
 
         # roulette select
-        p = scores - scores.min() + 1
-        select_p = p / p.sum()
-        parents[n_elite:] = rng.choice(chroms, n_roulette, replace=False, p=select_p)
+        #p = scores - scores.min() + 1
+        #select_p = p / p.sum()
+        r = np.array(range(len(chroms))[::-1]) + 1
+        select_p = r / r.sum()
+        parents[n_elite:] = rng.choice(chroms, n_ranking, replace=False, p=select_p)
 
         nxt_chroms = np.zeros([pop_size, len_chrom])
+        nxt_chroms[:n_parents] = parents
 
         for i in range(n_crossov):
             c1, c2 = rng.choice(parents, 2, replace=False)
-            nxt_chroms[i] = cross_over(c1, c2)
+            nxt_chroms[i+n_parents] = cross_over(c1, c2)
 
         # mutation
-        for i in range(n_crossov):
+        for i in range(pop_size - 1):
             if np.random.rand() < mut_pb:
-                mutate(nxt_chroms[i])
-
-        nxt_chroms[n_crossov:] = parents
+                mutate(nxt_chroms[i+1])
 
         chroms = nxt_chroms
 
@@ -116,17 +127,23 @@ def battle(c1, c2, p2='chrom'):
     return p ^ 1 if game.checkResult() != 0 else None
 
 
-def cross_over(c1, c2):
+def cross_over(c1, c2, alpha=0.2):
     c = np.zeros(GAgent.LEN_CHROM)
     for i in range(GAgent.LEN_CHROM):
-        c[i] = c1[i] if np.random.rand() < 0.5 else c2[i]
+        xmin = min(c1[i], c2[i])
+        xmax = max(c1[i], c2[i])
+        d = abs(c1[i] - c2[i])
+
+        rmin = xmin - alpha * d
+        rmax = xmax + alpha * d
+        c[i] = np.random.rand() * abs(rmax - rmin) + rmin
     return c
 
 
 def mutate(c):
     n = len_chrom // 100
-    idx = np.random.randint(0, len_chrom, n)
-    c[idx] = np.random.rand(n)*2 - 1
+    idx = rng.choice(range(len_chrom), n, replace=False)
+    c[idx] = np.random.rand(n) * abs(c.max() - c.min()) + c.min()
 
 
 def test(c, agent, n):
@@ -157,11 +174,11 @@ if __name__ == '__main__':
         chroms = np.load(args.chroms)
 
     
-    test(chroms[0], 'q-learn', 100)
-
     chroms = main(chroms, args.n_gen)
 
-    test(chroms[0], 'q-learn', 100)
+    test(chroms[0][0], 'q-learn', 100)
+    test(chroms[1], 'q-learn', 100)
 
+    chroms = np.array(chroms, dtype=object)
     np.save('weights/' + args.output + '_' + str(args.n_gen), chroms)
 
