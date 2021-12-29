@@ -4,7 +4,7 @@ sys.path.append(os.pardir)
 import argparse
 import bisect
 import numpy as np
-import concurrent.futures
+from concurrent.futures import ProcessPoolExecutor
 from tqdm import tqdm
 from numpy.random import default_rng
 rng = default_rng()
@@ -15,16 +15,16 @@ from random_agent import RandomAgent
 from greedy_agent import GreedyAgent
 from load_ import load_agent
 
-pop_size = 256
+pop_size = 64
 len_chrom = GAgent.LEN_CHROM
 init_max = 10
 init_min = -10
 
 
-def main(chroms, n_gen, n_gengap = 197, mut_pb=0.01):
+def main(chroms, n_gen, n_gengap = 50, mut_pb=0.01):
     n_parents = pop_size - n_gengap
     n_children = pop_size - n_parents
-    n_elite = 20
+    n_elite = 4
     n_roulette = n_parents - n_elite
     #n_ranking = n_parents - n_elite
 
@@ -88,15 +88,15 @@ def main(chroms, n_gen, n_gengap = 197, mut_pb=0.01):
 
 
 def get_fitness(chroms):
-    with concurrent.futures.ProcessPoolExecutor() as e:
+    with ProcessPoolExecutor() as e:
         results = [r for r in e.map(_vs_ai, range(pop_size), [chroms]*pop_size)]
     return np.array(results).sum(axis=0)
 
 
 def _vs_ai(idx, chroms):
     results = [0]*3
-    for i in range(10):
-        r = battle(chroms[idx], None, 'q-learn')
+    for i in range(100):
+        r = battle(chroms[idx], None, 'random')
         if r is None:
             results[2] += 1
         else:
@@ -168,7 +168,7 @@ def mutate(c):
 
 def test(c, agent, n):
     result = [0]*3
-    with concurrent.futures.ProcessPoolExecutor() as e:
+    with ProcessPoolExecutor() as e:
         res = [r for r in e.map(battle, [c]*n, [None]*n, [agent]*n)]
     for r in res:
         if r is None:
