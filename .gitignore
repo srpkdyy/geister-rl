@@ -9,4 +9,4 @@ __pycache__/geister2.cpython-37.pyc
 __pycache__/
 
 *.txt
-GA/weights
+GA/weights_loser

@@ -11,7 +11,7 @@ def main(args):
     agents = {
         'GA': GAgent
     }
-    chrom = np.load('GA/weights/latest_100.npy', allow_pickle=True)
+    chrom = np.load('GA/weights/'+args.chrom+'.npy', allow_pickle=True)
     agent = agents[args.agent](game, chrom=chrom[1])
 
     res = tcp_player.tcp_connect(agent, game, args.port, args.host, args.n_games)
@@ -24,6 +24,7 @@ if __name__ == '__main__':
     parser.add_argument('-p', '--port', type=int, default=10000)
     parser.add_argument('-a', '--agent', type=str, default='GA')
     parser.add_argument('-n', '--n-games', type=int, default=1)
+    parser.add_argument('-c', '--chrom', type=str, default='latest100')
 
     main(parser.parse_args())
 

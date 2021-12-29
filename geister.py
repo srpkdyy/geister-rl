@@ -32,6 +32,7 @@ class Geister:
                 self.units[i].color = 2  #if i < 8 else 3
             else:
                 self.units[i].color = 0  #if i < 8 else 1
+        return self
 
     def printBoard(self):
         color = list(Geister.colorIndex.keys())
