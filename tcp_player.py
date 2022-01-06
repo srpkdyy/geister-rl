@@ -37,7 +37,7 @@ def tcp_connect(agent, game, port, host="localhost", games=1):
     for _ in range(games):
         result = client.run(player, port, host)
         rs[result] += 1
-        #sleep(0.1)
+        sleep(0.1)
     return rs
 
 

@@ -1,7 +1,6 @@
 import os, sys
 sys.path.append(os.pardir)
 
-import utils
 import numpy as np
 rng = np.random.default_rng()
 import random
@@ -35,7 +34,7 @@ class GAgent(IAgent):
         units = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
         red_places = list(itertools.combinations(units, 4))
 
-        g = self._game
+        g = Geister2()
         pw = self.relate_pairwise
         rps = [pw(g.setRed(p).crr_state()) for p in red_places]
         scores = [self.evaluate(rp) for rp in rps]
@@ -63,6 +62,7 @@ class GAgent(IAgent):
 
 
 if __name__ == '__main__':
+    import utils
     result = [0]*3
     chroms = np.load('weights/128-random_100.npy', allow_pickle=True)
 

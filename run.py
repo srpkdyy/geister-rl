@@ -12,7 +12,7 @@ def main(args):
         'GA': GAgent
     }
     chrom = np.load('GA/weights/'+args.chrom+'.npy', allow_pickle=True)
-    agent = agents[args.agent](game, chrom=chrom[1])
+    agent = agents[args.agent](game, chrom=chrom)
 
     res = tcp_player.tcp_connect(agent, game, args.port, args.host, args.n_games)
     print('WIN: {}\nDRAW: {}\nLOSE: {}'.format(*res))

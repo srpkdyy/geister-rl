@@ -15,16 +15,16 @@ from random_agent import RandomAgent
 from greedy_agent import GreedyAgent
 from load_ import load_agent
 
-pop_size = 64
+pop_size = 1297
 len_chrom = GAgent.LEN_CHROM
 init_max = 10
 init_min = -10
 
 
-def main(chroms, n_gen, n_gengap = 50, mut_pb=0.01):
+def main(chroms, n_gen, n_gengap = 500, mut_pb=0.01):
     n_parents = pop_size - n_gengap
     n_children = pop_size - n_parents
-    n_elite = 4
+    n_elite = 48
     n_roulette = n_parents - n_elite
     #n_ranking = n_parents - n_elite
 
@@ -95,8 +95,8 @@ def get_fitness(chroms):
 
 def _vs_ai(idx, chroms):
     results = [0]*3
-    for i in range(100):
-        r = battle(chroms[idx], None, 'random')
+    for i in range(20):
+        r = battle(chroms[idx], None, 'q-learn')
         if r is None:
             results[2] += 1
         else:
@@ -179,6 +179,18 @@ def test(c, agent, n):
     return result
 
 
+def top_save(cs, agent, n):
+    score = -10**7
+    model = None
+    for c in tqdm(cs):
+        w, l, _ = test(c, agent, n)
+        s = w - l
+        if s > score:
+            score = s
+            model = c
+        print('best: {}'.format(score))
+    np.save('weights/oribest', model)
+    exit()
 
 
 if __name__ == '__main__':
@@ -195,8 +207,9 @@ if __name__ == '__main__':
         chs = rng.choice(chroms[0][1:], pop_size-2, replace=False)
         chroms = np.vstack([chroms[0][0], chs, chroms[1]])
 
-    test(chroms[0], 'random', 100)
+    top_save(chroms, 'q-learn', 200)
     
+    test(chroms[0], 'random', 100)
     chroms = main(chroms, args.n_gen)
 
     test(chroms[0][0], 'random', 100)
