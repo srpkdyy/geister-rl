@@ -15,16 +15,16 @@ from random_agent import RandomAgent
 from greedy_agent import GreedyAgent
 from load_ import load_agent
 
-pop_size = 1297
+pop_size = 1296
 len_chrom = GAgent.LEN_CHROM
 init_max = 10
 init_min = -10
 
 
-def main(chroms, n_gen, n_gengap = 500, mut_pb=0.01):
+def main(chroms, n_gen, n_gengap = 1000, mut_pb=0.01):
     n_parents = pop_size - n_gengap
     n_children = pop_size - n_parents
-    n_elite = 48
+    n_elite = 96
     n_roulette = n_parents - n_elite
     #n_ranking = n_parents - n_elite
 
@@ -58,9 +58,6 @@ def main(chroms, n_gen, n_gengap = 500, mut_pb=0.01):
         # elite select
         parents = np.zeros([n_parents, len_chrom])
         parents[:n_elite] = chroms[:n_elite]
-        #parents[n_elite//2:n_elite] = chroms[:n_elite//2]
-        #for i in range(n_parents):
-        #    mutate(parents[i+n_parents//2])
 
         chroms = chroms[n_elite:]
         scores = scores[n_elite:]
@@ -68,8 +65,6 @@ def main(chroms, n_gen, n_gengap = 500, mut_pb=0.01):
         # roulette select
         p = scores - scores.min() + 0.01
         select_p = p / p.sum()
-        #r = np.array(range(len(chroms))[::-1]) + 0.01
-        #select_p = r / r.sum()
         parents[n_elite:] = rng.choice(chroms, n_roulette, replace=False, p=select_p)
 
         nxt_chroms = np.zeros([pop_size, len_chrom])
@@ -207,9 +202,11 @@ if __name__ == '__main__':
         chs = rng.choice(chroms[0][1:], pop_size-2, replace=False)
         chroms = np.vstack([chroms[0][0], chs, chroms[1]])
 
-    top_save(chroms, 'q-learn', 200)
+    #top_save(chroms, 'q-learn', 200)
     
     test(chroms[0], 'random', 100)
+    test(chroms[0], 'q-learn', 100)
+
     chroms = main(chroms, args.n_gen)
 
     test(chroms[0][0], 'random', 100)
