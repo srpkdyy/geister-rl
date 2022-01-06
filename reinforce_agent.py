@@ -224,9 +224,14 @@ class REINFORCEAgent(IAgent):
         # for i in range(s1_size):
         #     y[:, (i*(i+1)//2):((i+1)*(i+2)//2)] = x[:, i:i+1]*x[:, 0:i+1]
         # 二駒関係v3
+        '''
         x = (x[:, self.ROW_IDS]*x[:, self.COL_IDS]).reshape(a_size, -1)
         x[:, -1] = 1  # バイアス項
-        return x
+        '''
+        ret = [(xx[self.ROW_IDS]*xx[self.COL_IDS]).reshape(-1) for xx in x]
+        ret = np.array(ret)
+        ret[:, -1] = 1
+        return ret
 
     def get_act_afterstates(self, states):
         assert(self.theta.shape[0] != 0)
@@ -259,12 +264,14 @@ class REINFORCEAgent(IAgent):
         self.w = None
         self.theta = None
 
-        self.ROW_IDS = []
-        self.COL_IDS = []
+        self.ROW_IDS, self.COL_IDS = np.tril_indices(self.S_SIZE+1)
+
+        '''
         for i in range(self.S_SIZE+1):
             self.ROW_IDS += [i]*(i+1)
             for j in range(i+1):
                 self.COL_IDS += [j]
+        '''
 
 
 if __name__ == "__main__":
