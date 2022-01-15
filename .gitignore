@@ -5,3 +5,8 @@ space_for_kernel.py
 make_graph.py
 .idea/workspace.xml
 __pycache__/geister2.cpython-37.pyc
+
+__pycache__/
+
+*.txt
+GA/weights*
