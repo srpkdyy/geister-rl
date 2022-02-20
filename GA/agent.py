@@ -9,9 +9,7 @@ from tqdm import tqdm
 from concurrent.futures import ProcessPoolExecutor
 
 from iagent import IAgent
-from random_agent import RandomAgent
 from geister2 import Geister2
-from load_ import load_agent
 
 
 class GAgent(IAgent):
@@ -34,13 +32,14 @@ class GAgent(IAgent):
         units = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
         red_places = list(itertools.combinations(units, 4))
         return red_places[np.random.randint(len(red_places))]
-
+        '''
         g = Geister2()
         pw = self.relate_pairwise
         rps = [pw(g.setRed(p).crr_state()) for p in red_places]
         scores = [self.evaluate(rp) for rp in rps]
         i_place = np.array(scores).argmax()
         return red_places[i_place]
+        '''
 
     
     def get_act_afterstates(self, states):
@@ -71,7 +70,6 @@ class GAgent(IAgent):
 
 if __name__ == '__main__':
     import utils
-    result = [0]*3
     chroms = np.load('weights/best.npy', allow_pickle=True)
 
     result = [0]*3
