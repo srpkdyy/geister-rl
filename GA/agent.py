@@ -33,6 +33,7 @@ class GAgent(IAgent):
     def init_red(self):
         units = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
         red_places = list(itertools.combinations(units, 4))
+        return red_places[np.random.randint(len(red_places))]
 
         g = Geister2()
         pw = self.relate_pairwise
@@ -45,7 +46,14 @@ class GAgent(IAgent):
     def get_act_afterstates(self, states):
         rps = [self.relate_pairwise(s) for s in states]
         scores = [self.evaluate(rp) for rp in rps]
-        nxt = np.array(scores).argmax()
+        scores = np.array(scores)
+        p = np.exp(scores)
+        p /= p.sum()
+        #scores = np.array(scores) - min(scores)
+        #scores /= scores.sum()
+        nxt = np.random.choice(len(states), 1, p=p)[0]
+
+        #nxt = scores.argmax()
         return nxt
 
 
@@ -64,13 +72,12 @@ class GAgent(IAgent):
 if __name__ == '__main__':
     import utils
     result = [0]*3
-    chroms = np.load('weights/128-random_100.npy', allow_pickle=True)
+    chroms = np.load('weights/best.npy', allow_pickle=True)
 
-    c1, c2 = chroms[0][0], chroms[0][-1]
     result = [0]*3
     n = 100
     for i in tqdm(range(n)):
-        r = utils.battle(GAgent, RandomAgent, c1, None)
+        r = utils.battle(GAgent, RandomAgent, chroms, None)
         result[r] += 1
 
     print('Win:{}, Lose:{}, Draw:{}'.format(*result))

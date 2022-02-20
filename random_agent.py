@@ -1,4 +1,6 @@
 import random
+import numpy as np
+from tqdm import tqdm
 from iagent import IAgent
 from geister import Geister
 from geister2 import Geister2
@@ -9,10 +11,9 @@ class RandomAgent(IAgent):
         act_i = self._rnd.randrange(len(states))
         return act_i
 
-    # def get_next_action(self, state):
-    #     moves = self._game.getLegalMove()
-    #     action = self._rnd.choice(moves)
-    #     return action
+    def get_next_action(self, moves):
+        action = self._rnd.choice(moves)
+        return action
 
     def init_red(self):
         arr = ["A", "B", "C", "D", "E", "F", "G", "H"]
@@ -25,26 +26,32 @@ class RandomAgent(IAgent):
 
 
 if __name__ == "__main__":
-    game = Geister2()
-    agent1 = RandomAgent(game, -1)
-    agent2 = RandomAgent(game, 2)
-    game.printBoard()
-    init1 = agent1.init_red()
-    init2 = agent2.init_red()
-    game.setRed(init1)
-    game.changeSide()
-    game.setRed(init2)
-    game.changeSide()
-    game.printBoard()
-    for _ in range(10000):
-        while game.checkResult() == 0:
-            states = game.after_states()
-            game.on_action_number_received(agent1.get_act_afterstates(states))
+    n = 10000
+    rate = 0
+    turn = [0]*n
+    for i in tqdm(range(n)):
+        game = Geister2()
+        agents = [RandomAgent(game, None), RandomAgent(game, None)]
+        for agent in agents:
+            game.setRed(agent.init_red())
             game.changeSide()
-            if game.checkResult() != 0:
+
+        p = 0
+        while True:
+            turn[i] += 1
+            moves = game.legalMoves()
+            move = agents[p].get_next_action(moves)
+            game.move(*move)
+            game.changeSide()
+            p ^= 1
+            if game.is_ended():
+                if p == 1: game.changeSide()
+                r = 1 if game.checkResult() > 0 else -1
+                rate += r
                 break
-            states = game.after_states()
-            game.on_action_number_received(agent2.get_act_afterstates(states))
-            game.changeSide()
-        game.changeSide()
-        game.printAll()
+    game.printAll()
+    print(rate, r)
+    turn = np.array(turn)
+    print(np.histogram(turn, bins=10))
+    print(turn.min(), turn.mean(), turn.max())
+
